@@ -64,7 +64,6 @@ st.markdown("""
 
 # 3. Sidebar - Professional Corporate Branding
 with st.sidebar:
-    # Highly professional corporate biometric/security icon
     st.image("https://cdn-icons-png.flaticon.com/512/3063/3063822.png", width=100)
     st.title("Admin Console")
     st.write("**Welcome to the Attendance Management System.**")
@@ -93,7 +92,6 @@ with st.container():
 st.divider()
 
 if search_input:
-    # PRO FEATURE: Validation Logic
     if not (search_input.isdigit() and len(search_input) == 6):
         st.warning("⚠️ Access Denied: Employee ID format invalid. Must be exactly 6 digits.")
     else:
@@ -102,7 +100,6 @@ if search_input:
         if not employee_data.empty:
             st.success("✅ Secure Connection Established. Record Found.")
             
-            # Extract Data
             name = employee_data.iloc[0]['NAME']
             doj = employee_data.iloc[0]['DOJ']
             designation = employee_data.iloc[0]['DESIGNATION']
@@ -116,10 +113,8 @@ if search_input:
             except:
                 attendance_pct = 0.0
 
-            # PRO FEATURE: Tabbed Navigation
             tab1, tab2 = st.tabs(["📊 Dashboard Overview", "📅 Day-Wise Calendar View"])
             
-            # --- TAB 1: DASHBOARD ---
             with tab1:
                 col_prof, col_stats = st.columns([1, 2])
                 with col_prof:
@@ -144,24 +139,21 @@ if search_input:
                 st.write("")
                 st.info(f"💰 **Payroll System:** Authorized for **{payable_days}** payable days.")
 
-            # --- TAB 2: THE COOL CALENDAR ---
             with tab2:
                 st.markdown("### 📅 Monthly Attendance Record")
                 st.write("Visual breakdown of daily operational presence.")
                 
-                # Build the HTML Grid dynamically
                 calendar_html = '<div class="calendar-container"><div class="calendar-grid">'
                 
                 for day in range(1, 32):
                     day_str = str(day)
                     if day_str in employee_data.columns:
                         val = str(employee_data.iloc[0][day_str]).strip().upper()
-                        # Clean up pandas NaN values
                         if val == 'NAN' or val == '': val = 'NA'
                         
-                        # Assign CSS class based on attendance code
-                        if val == 'P': status_class = 'status-P'
-                        elif val == 'A': status_class = 'status-A'
+                        # --- THE FIX IS HERE ---
+                        if val.startswith('P') or val == 'PL': status_class = 'status-P'
+                        elif val.startswith('A'): status_class = 'status-A'
                         elif val == 'WO': status_class = 'status-WO'
                         elif val == 'HD': status_class = 'status-HD'
                         elif val == 'LWP': status_class = 'status-LWP'
@@ -175,7 +167,6 @@ if search_input:
                         '''
                 
                 calendar_html += '</div></div>'
-                # Render the HTML in Streamlit
                 st.markdown(calendar_html, unsafe_allow_html=True)
                 
         else:
