@@ -9,10 +9,21 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 2. Injecting Advanced CSS for Dashboard and Calendar Grid
+# 2. Advanced CSS with ANIMATIONS
 st.markdown("""
     <style>
-    /* Metric Cards */
+    /* CSS Animations */
+    @keyframes slideUpFadeIn {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseSuccess {
+        0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
+    }
+
+    /* Animated Metric Cards */
     .metric-card {
         background-color: #ffffff;
         border-radius: 12px;
@@ -20,13 +31,12 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         text-align: center;
         border-left: 5px solid #0052cc;
+        animation: slideUpFadeIn 0.6s ease-out forwards;
         transition: transform 0.2s;
     }
-    .metric-card:hover {
-        transform: translateY(-5px);
-    }
+    .metric-card:hover { transform: translateY(-5px); }
     .metric-title { color: #6c757d; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-    .metric-value { color: #091e42; font-size: 34px; font-weight: 800; margin-top: 8px; }
+    .metric-value { color: #091e42; font-size: 30px; font-weight: 800; margin-top: 8px; }
     
     /* Calendar Grid */
     .calendar-container { margin-top: 20px; }
@@ -48,7 +58,13 @@ st.markdown("""
         justify-content: center;
         align-items: center;
         min-height: 80px;
+        animation: slideUpFadeIn 0.5s ease-out forwards;
     }
+    
+    /* Staggered Animation Delays for Calendar */
+    .cal-day:nth-child(even) { animation-delay: 0.1s; }
+    .cal-day:nth-child(odd) { animation-delay: 0.2s; }
+
     .cal-num { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 5px; }
     .cal-status { font-size: 14px; font-weight: 800; padding: 4px 10px; border-radius: 20px; }
     
@@ -59,14 +75,27 @@ st.markdown("""
     .status-HD { background: #e3f2fd; color: #1565c0; border-color: #90caf9; }
     .status-LWP { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
     .status-NA { background: #fafafa; color: #bdbdbd; border-color: #eeeeee; }
+    
+    /* Success Alert Animation */
+    .success-alert {
+        padding: 15px;
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        border-radius: 8px;
+        border: 1px solid #a5d6a7;
+        font-weight: bold;
+        animation: pulseSuccess 2s infinite;
+        margin-bottom: 20px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # 3. Sidebar - Professional Corporate Branding
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3063/3063822.png", width=100)
+    # Updated to a sleek Web URL icon that matches your requested style
+    st.image("https://cdn-icons-png.flaticon.com/512/6813/6813350.png", width=120)
     st.title("Admin Console")
-    st.write("**Welcome to the Attendance Management System.**")
+    st.write("**Online Attendance System**")
     st.divider()
     st.caption("🔒 Security: 256-bit Encrypted")
     st.caption("☁️ Database: Cloud Sync Active")
@@ -85,7 +114,7 @@ def load_data():
 
 df = load_data()
 
-# 6. Strict Input Validation (6 Digits Only)
+# 6. Strict Input Validation
 with st.container():
     search_input = st.text_input("🔍 Employee ID (6 Digits):", max_chars=6, placeholder="e.g., 837897")
 
@@ -98,21 +127,30 @@ if search_input:
         employee_data = df[df['Empoyee ID'] == search_input]
         
         if not employee_data.empty:
-            st.success("✅ Secure Connection Established. Record Found.")
+            # Custom Animated Success Banner
+            st.markdown('<div class="success-alert">✅ Secure Connection Established. Record Found.</div>', unsafe_allow_html=True)
             
-            # Extract Data
+            # Extract Core Data
             name = employee_data.iloc[0]['NAME']
             doj = employee_data.iloc[0]['DOJ']
             designation = employee_data.iloc[0]['DESIGNATION']
             status = employee_data.iloc[0]['CURRENT STATUS']
-            present = employee_data.iloc[0]['P']
             total = employee_data.iloc[0]['Total']
             payable_days = employee_data.iloc[0]['Payable Days']
             
-            try:
-                attendance_pct = round((float(present) / float(total)) * 100, 1)
-            except:
-                attendance_pct = 0.0
+            # --- DYNAMIC TALLY SYSTEM (Replaces Percentage) ---
+            count_P = 0
+            count_WO = 0
+            count_A = 0
+            
+            # Scan columns 1 to 31 for this exact employee to calculate their stats
+            for day in range(1, 32):
+                day_str = str(day)
+                if day_str in employee_data.columns:
+                    val = str(employee_data.iloc[0][day_str]).strip().upper()
+                    if val.startswith('P') or val == 'PL': count_P += 1
+                    elif val == 'WO': count_WO += 1
+                    elif val.startswith('A'): count_A += 1
 
             # UI Layout: Tabs
             tab1, tab2 = st.tabs(["📊 Dashboard Overview", "📅 Day-Wise Calendar View"])
@@ -124,22 +162,22 @@ if search_input:
                     st.write(f"**Role:** {designation}")
                     st.write(f"**Status:** `{status}`")
                     st.write(f"**Joining Date:** {doj}")
-                    st.write("")
-                    progress_val = min(attendance_pct / 100, 1.0)
-                    st.progress(progress_val)
                     
                 with col_stats:
-                    scol1, scol2, scol3 = st.columns(3)
+                    # Removed % and added dynamic Breakdown
+                    scol1, scol2, scol3, scol4 = st.columns(4)
                     with scol1:
-                        st.markdown(f'<div class="metric-card"><div class="metric-title">Total Days</div><div class="metric-value">{total}</div></div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="metric-card"><div class="metric-title">Total Base</div><div class="metric-value">{total}</div></div>', unsafe_allow_html=True)
                     with scol2:
-                        st.markdown(f'<div class="metric-card"><div class="metric-title">Days Present</div><div class="metric-value">{present}</div></div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="metric-card" style="border-left: 5px solid #2e7d32;"><div class="metric-title">Present (P)</div><div class="metric-value" style="color: #2e7d32;">{count_P}</div></div>', unsafe_allow_html=True)
                     with scol3:
-                        color = "#2e7d32" if attendance_pct >= 80 else "#c62828"
-                        st.markdown(f'<div class="metric-card" style="border-left: 5px solid {color};"><div class="metric-title">Attendance %</div><div class="metric-value" style="color: {color};">{attendance_pct}%</div></div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="metric-card" style="border-left: 5px solid #616161;"><div class="metric-title">Week Offs</div><div class="metric-value" style="color: #616161;">{count_WO}</div></div>', unsafe_allow_html=True)
+                    with scol4:
+                        st.markdown(f'<div class="metric-card" style="border-left: 5px solid #c62828;"><div class="metric-title">Absent (A)</div><div class="metric-value" style="color: #c62828;">{count_A}</div></div>', unsafe_allow_html=True)
                 
                 st.write("")
-                st.info(f"💰 **Payroll System:** Authorized for **{payable_days}** payable days.")
+                # Updated Payroll Phrasing
+                st.info(f"💰 **Payroll Module:** Currently tracking **{payable_days}** accrued payable days for this cycle.")
 
             with tab2:
                 st.markdown("### 📅 Monthly Attendance Record")
@@ -153,7 +191,7 @@ if search_input:
                         val = str(employee_data.iloc[0][day_str]).strip().upper()
                         if val == 'NAN' or val == '': val = 'NA'
                         
-                        # Substring Matching for dynamic shift codes
+                        # Substring Matching
                         if val.startswith('P') or val == 'PL': status_class = 'status-P'
                         elif val.startswith('A'): status_class = 'status-A'
                         elif val == 'WO': status_class = 'status-WO'
@@ -161,7 +199,6 @@ if search_input:
                         elif val == 'LWP': status_class = 'status-LWP'
                         else: status_class = 'status-NA'
                         
-                        # Flattened HTML to prevent Markdown code block rendering
                         calendar_html += f'<div class="cal-day {status_class}">'
                         calendar_html += f'<div class="cal-num">{day}</div>'
                         calendar_html += f'<div class="cal-status {status_class}">{val}</div>'
