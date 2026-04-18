@@ -1,145 +1,182 @@
 import streamlit as st
 import pandas as pd
 
-# 1. Premium Page Configuration
+# 1. Pro-Level Page Configuration
 st.set_page_config(
-    page_title="Enterprise MIS Portal", 
+    page_title="Attendance Management System", 
     page_icon="🏢", 
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# 2. Injecting Custom CSS for a "Top-Notch" UI
+# 2. Injecting Advanced CSS for Dashboard and Calendar Grid
 st.markdown("""
     <style>
+    /* Metric Cards */
     .metric-card {
-        background-color: #f8f9fa;
-        border-radius: 10px;
+        background-color: #ffffff;
+        border-radius: 12px;
         padding: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         text-align: center;
         border-left: 5px solid #0052cc;
+        transition: transform 0.2s;
     }
-    .metric-title {
-        color: #6c757d;
-        font-size: 14px;
-        font-weight: 600;
-        text-transform: uppercase;
+    .metric-card:hover {
+        transform: translateY(-5px);
     }
-    .metric-value {
-        color: #172b4d;
-        font-size: 32px;
-        font-weight: bold;
-        margin-top: 5px;
+    .metric-title { color: #6c757d; font-size: 13px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    .metric-value { color: #091e42; font-size: 34px; font-weight: 800; margin-top: 8px; }
+    
+    /* Calendar Grid */
+    .calendar-container { margin-top: 20px; }
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 12px;
+        margin-top: 15px;
     }
+    .cal-day {
+        background: #ffffff;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 15px 10px;
+        text-align: center;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 80px;
+    }
+    .cal-num { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 5px; }
+    .cal-status { font-size: 14px; font-weight: 800; padding: 4px 10px; border-radius: 20px; }
+    
+    /* Status Colors */
+    .status-P { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+    .status-A { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+    .status-WO { background: #f5f5f5; color: #616161; border-color: #e0e0e0; }
+    .status-HD { background: #e3f2fd; color: #1565c0; border-color: #90caf9; }
+    .status-LWP { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
+    .status-NA { background: #fafafa; color: #bdbdbd; border-color: #eeeeee; }
     </style>
 """, unsafe_allow_html=True)
 
-# 3. Sidebar Branding
+# 3. Sidebar - Professional Corporate Branding
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/2942/2942813.png", width=80)
+    # Highly professional corporate biometric/security icon
+    st.image("https://cdn-icons-png.flaticon.com/512/3063/3063822.png", width=100)
     st.title("Admin Console")
-    st.write("Welcome to the Flex Workforce MIS Tracking system.")
+    st.write("**Welcome to the Attendance Management System.**")
     st.divider()
-    st.caption("Secure Connection: Active 🟢")
-    st.caption("Database: Google Cloud Sync")
+    st.caption("🔒 Security: 256-bit Encrypted")
+    st.caption("☁️ Database: Cloud Sync Active")
 
 # 4. Main Header
-st.title("🏢 Real-Time MIS & Attendance Portal")
-st.markdown("Enter an employee's unique ID to pull live operational data from the master database.")
+st.title("🏢 Attendance Management System")
+st.markdown("Secure Access Portal. Please enter an authorized 6-digit Employee ID.")
 
-# 5. Data Loading & The Bug Fix
+# 5. Data Loading Engine
 @st.cache_data(ttl=60) 
 def load_data():
     sheet_url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSX3174rGnpJyOXOKRAyXJ1EnLFd0K2c6g4egdNbFjDUqmEWessrdcUSc5nY1sxQaXd-EXYGCDpZjyy/pub?output=csv"
-    
-    # Read the CSV, and FORCE the ID column to be a String to prevent the matching bug
     df = pd.read_csv(sheet_url, dtype={'Empoyee ID': str})
-    
-    # Clean up the column by stripping accidental spaces
-    df['Empoyee ID'] = df['Empoyee ID'].str.strip().str.upper()
+    df['Empoyee ID'] = df['Empoyee ID'].str.strip()
     return df
 
 df = load_data()
 
-# 6. The Search Interface
-# Placed inside a clean container
+# 6. Strict Input Validation (6 Digits Only)
 with st.container():
-    search_input = st.text_input("🔍 Search Employee ID:", max_chars=15, placeholder="e.g., 837897")
+    search_input = st.text_input("🔍 Employee ID (6 Digits):", max_chars=6, placeholder="e.g., 837897")
 
 st.divider()
 
-# 7. Processing & Beautiful Display
 if search_input:
-    search_term = search_input.strip().upper()
-    employee_data = df[df['Empoyee ID'] == search_term]
-    
-    if not employee_data.empty:
-        st.success("✅ Employee Record Authenticated and Retrieved")
-        
-        # Extract Data
-        name = employee_data.iloc[0]['NAME']
-        doj = employee_data.iloc[0]['DOJ']
-        designation = employee_data.iloc[0]['DESIGNATION']
-        status = employee_data.iloc[0]['CURRENT STATUS']
-        
-        present = employee_data.iloc[0]['P']
-        total = employee_data.iloc[0]['Total']
-        payable_days = employee_data.iloc[0]['Payable Days']
-        
-        # Safe Math Calculation
-        try:
-            attendance_pct = round((float(present) / float(total)) * 100, 1)
-        except:
-            attendance_pct = 0.0
-            
-        # UI Layout: Two columns for a dashboard feel
-        col_prof, col_stats = st.columns([1, 2])
-        
-        with col_prof:
-            st.markdown(f"### 👤 {name}")
-            st.write(f"**Role:** {designation}")
-            st.write(f"**Status:** `{status}`")
-            st.write(f"**Joining Date:** {doj}")
-            
-            st.write("")
-            st.write("**Overall Attendance Health**")
-            # Visual Progress Bar
-            progress_val = min(attendance_pct / 100, 1.0) # Ensure it doesn't break if over 100%
-            st.progress(progress_val)
-            
-        with col_stats:
-            # Using the custom CSS classes we injected at the top
-            scol1, scol2, scol3 = st.columns(3)
-            
-            with scol1:
-                st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-title">Total Days</div>
-                    <div class="metric-value">{total}</div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-            with scol2:
-                st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-title">Days Present</div>
-                    <div class="metric-value">{present}</div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-            with scol3:
-                # Color code the percentage (Green if good, Red if bad)
-                color = "#2e7d32" if attendance_pct >= 80 else "#c62828"
-                st.markdown(f"""
-                <div class="metric-card" style="border-left: 5px solid {color};">
-                    <div class="metric-title">Attendance %</div>
-                    <div class="metric-value" style="color: {color};">{attendance_pct}%</div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-        st.write("")
-        st.info(f"💰 **Payroll Module:** Authorized for **{payable_days}** payable days this cycle.")
-        
+    # PRO FEATURE: Validation Logic
+    if not (search_input.isdigit() and len(search_input) == 6):
+        st.warning("⚠️ Access Denied: Employee ID format invalid. Must be exactly 6 digits.")
     else:
-        st.error("⚠️ Error: Employee ID not found in the active database. Please verify the ID and try again.")
+        employee_data = df[df['Empoyee ID'] == search_input]
+        
+        if not employee_data.empty:
+            st.success("✅ Secure Connection Established. Record Found.")
+            
+            # Extract Data
+            name = employee_data.iloc[0]['NAME']
+            doj = employee_data.iloc[0]['DOJ']
+            designation = employee_data.iloc[0]['DESIGNATION']
+            status = employee_data.iloc[0]['CURRENT STATUS']
+            present = employee_data.iloc[0]['P']
+            total = employee_data.iloc[0]['Total']
+            payable_days = employee_data.iloc[0]['Payable Days']
+            
+            try:
+                attendance_pct = round((float(present) / float(total)) * 100, 1)
+            except:
+                attendance_pct = 0.0
+
+            # PRO FEATURE: Tabbed Navigation
+            tab1, tab2 = st.tabs(["📊 Dashboard Overview", "📅 Day-Wise Calendar View"])
+            
+            # --- TAB 1: DASHBOARD ---
+            with tab1:
+                col_prof, col_stats = st.columns([1, 2])
+                with col_prof:
+                    st.markdown(f"### 👤 {name}")
+                    st.write(f"**Role:** {designation}")
+                    st.write(f"**Status:** `{status}`")
+                    st.write(f"**Joining Date:** {doj}")
+                    st.write("")
+                    progress_val = min(attendance_pct / 100, 1.0)
+                    st.progress(progress_val)
+                    
+                with col_stats:
+                    scol1, scol2, scol3 = st.columns(3)
+                    with scol1:
+                        st.markdown(f'<div class="metric-card"><div class="metric-title">Total Days</div><div class="metric-value">{total}</div></div>', unsafe_allow_html=True)
+                    with scol2:
+                        st.markdown(f'<div class="metric-card"><div class="metric-title">Days Present</div><div class="metric-value">{present}</div></div>', unsafe_allow_html=True)
+                    with scol3:
+                        color = "#2e7d32" if attendance_pct >= 80 else "#c62828"
+                        st.markdown(f'<div class="metric-card" style="border-left: 5px solid {color};"><div class="metric-title">Attendance %</div><div class="metric-value" style="color: {color};">{attendance_pct}%</div></div>', unsafe_allow_html=True)
+                
+                st.write("")
+                st.info(f"💰 **Payroll System:** Authorized for **{payable_days}** payable days.")
+
+            # --- TAB 2: THE COOL CALENDAR ---
+            with tab2:
+                st.markdown("### 📅 Monthly Attendance Record")
+                st.write("Visual breakdown of daily operational presence.")
+                
+                # Build the HTML Grid dynamically
+                calendar_html = '<div class="calendar-container"><div class="calendar-grid">'
+                
+                for day in range(1, 32):
+                    day_str = str(day)
+                    if day_str in employee_data.columns:
+                        val = str(employee_data.iloc[0][day_str]).strip().upper()
+                        # Clean up pandas NaN values
+                        if val == 'NAN' or val == '': val = 'NA'
+                        
+                        # Assign CSS class based on attendance code
+                        if val == 'P': status_class = 'status-P'
+                        elif val == 'A': status_class = 'status-A'
+                        elif val == 'WO': status_class = 'status-WO'
+                        elif val == 'HD': status_class = 'status-HD'
+                        elif val == 'LWP': status_class = 'status-LWP'
+                        else: status_class = 'status-NA'
+                        
+                        calendar_html += f'''
+                        <div class="cal-day {status_class}">
+                            <div class="cal-num">{day}</div>
+                            <div class="cal-status {status_class}">{val}</div>
+                        </div>
+                        '''
+                
+                calendar_html += '</div></div>'
+                # Render the HTML in Streamlit
+                st.markdown(calendar_html, unsafe_allow_html=True)
+                
+        else:
+            st.error("⚠️ Error: Employee ID not found. Ensure the ID is active.")
