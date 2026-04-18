@@ -100,6 +100,7 @@ if search_input:
         if not employee_data.empty:
             st.success("✅ Secure Connection Established. Record Found.")
             
+            # Extract Data
             name = employee_data.iloc[0]['NAME']
             doj = employee_data.iloc[0]['DOJ']
             designation = employee_data.iloc[0]['DESIGNATION']
@@ -113,6 +114,7 @@ if search_input:
             except:
                 attendance_pct = 0.0
 
+            # UI Layout: Tabs
             tab1, tab2 = st.tabs(["📊 Dashboard Overview", "📅 Day-Wise Calendar View"])
             
             with tab1:
@@ -151,7 +153,7 @@ if search_input:
                         val = str(employee_data.iloc[0][day_str]).strip().upper()
                         if val == 'NAN' or val == '': val = 'NA'
                         
-                        # --- THE FIX IS HERE ---
+                        # Substring Matching for dynamic shift codes
                         if val.startswith('P') or val == 'PL': status_class = 'status-P'
                         elif val.startswith('A'): status_class = 'status-A'
                         elif val == 'WO': status_class = 'status-WO'
@@ -159,12 +161,11 @@ if search_input:
                         elif val == 'LWP': status_class = 'status-LWP'
                         else: status_class = 'status-NA'
                         
-                        calendar_html += f'''
-                        <div class="cal-day {status_class}">
-                            <div class="cal-num">{day}</div>
-                            <div class="cal-status {status_class}">{val}</div>
-                        </div>
-                        '''
+                        # Flattened HTML to prevent Markdown code block rendering
+                        calendar_html += f'<div class="cal-day {status_class}">'
+                        calendar_html += f'<div class="cal-num">{day}</div>'
+                        calendar_html += f'<div class="cal-status {status_class}">{val}</div>'
+                        calendar_html += '</div>'
                 
                 calendar_html += '</div></div>'
                 st.markdown(calendar_html, unsafe_allow_html=True)
